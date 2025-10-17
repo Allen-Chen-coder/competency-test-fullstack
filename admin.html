@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据管理后台 - 就业竞争力测评系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+        }
+        .table-row {
+            transition: all 0.3s ease;
+        }
+        .table-row:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+    </style>
+</head>
+<body class="py-8">
+    <div class="container mx-auto px-4">
+        <!-- 头部标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-4">数据管理后台</h1>
+            <p class="text-white text-lg opacity-90">就业竞争力测评系统数据管理中心</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card glass-card rounded-2xl p-6 shadow-2xl text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2" id="totalUsers">-</div>
+                <div class="text-gray-600">总用户数</div>
+            </div>
+            <div class="stat-card glass-card rounded-2xl p-6 shadow-2xl text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2" id="totalAssessments">-</div>
+                <div class="text-gray-600">测评次数</div>
+            </div>
+            <div class="stat-card glass-card rounded-2xl p-6 shadow-2xl text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2" id="averageScore">-</div>
+                <div class="text-gray-600">平均分数</div>
+            </div>
+            <div class="stat-card glass-card rounded-2xl p-6 shadow-2xl text-center">
+                <div class="text-3xl font-bold text-orange-600 mb-2" id="completionRate">-</div>
+                <div class="text-gray-600">完成率</div>
+            </div>
+        </div>
+
+        <!-- 数据可视化 -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <!-- 分数分布图 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">分数分布统计</h3>
+                <div id="scoreChart" style="height: 300px;"></div>
+            </div>
+
+            <!-- 年级分布图 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">年级分布统计</h3>
+                <div id="gradeChart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选 -->
+        <div class="glass-card rounded-2xl p-6 shadow-2xl mb-8">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="searchInput" placeholder="搜索姓名或手机号..." 
+                           class="search-input w-full px-4 py-2 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none">
+                </div>
+                <div class="min-w-[150px]">
+                    <select id="gradeFilter" class="search-input w-full px-4 py-2 rounded-lg text-gray-800 focus:outline-none">
+                        <option value="">所有年级</option>
+                        <option value="大一">大一</option>
+                        <option value="大二">大二</option>
+                        <option value="大三">大三</option>
+                        <option value="大四">大四</option>
+                        <option value="研一">研一</option>
+                        <option value="研二">研二</option>
+                        <option value="研三">研三</option>
+                        <option value="博一">博一</option>
+                        <option value="博二">博二</option>
+                        <option value="博三">博三</option>
+                        <option value="博四">博四</option>
+                    </select>
+                </div>
+                <div class="min-w-[150px]">
+                    <select id="scoreFilter" class="search-input w-full px-4 py-2 rounded-lg text-gray-800 focus:outline-none">
+                        <option value="">所有分数</option>
+                        <option value="0-20">0-20分</option>
+                        <option value="21-40">21-40分</option>
+                        <option value="41-60">41-60分</option>
+                        <option value="61-80">61-80分</option>
+                        <option value="81-100">81-100分</option>
+                    </select>
+                </div>
+                <button id="exportBtn" class="btn-primary px-6 py-2 rounded-lg text-white font-medium">
+                    📄 导出数据
+                </button>
+            </div>
+        </div>
+
+        <!-- 用户数据表格 -->
+        <div class="glass-card rounded-2xl p-8 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">用户数据列表</h3>
+                <div class="text-sm text-gray-600">
+                    共 <span id="totalCount">-</span> 条记录
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">ID</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">姓名</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">年级</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">手机号</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">总分</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">注册时间</th>
+                            <th class="text-left py-3 px-4 font-bold text-gray-800">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- 数据将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm text-gray-600">
+                    显示第 <span id="pageStart">-</span> 到 <span id="pageEnd">-</span> 条，共 <span id="totalRecords">-</span> 条记录
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        上一页
+                    </button>
+                    <span id="pageInfo" class="px-4 py-2 text-gray-700">第 1 页</span>
+                    <button id="nextPage" class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        下一页
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="glass-card rounded-2xl p-8 shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">用户详情</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="modalContent">
+                <!-- 详情内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let users = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupEventListeners();
+        });
+
+        // 加载数据
+        async function loadData() {
+            try {
+                // 加载统计数据
+                const statsResponse = await fetch('/api/admin/stats');
+                const stats = await statsResponse.json();
+                
+                document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                document.getElementById('totalAssessments').textContent = stats.totalAssessments || 0;
+                document.getElementById('averageScore').textContent = stats.averageScore || 0;
+                document.getElementById('completionRate').textContent = 
+                    stats.totalUsers > 0 ? Math.round((stats.totalAssessments / stats.totalUsers) * 100) + '%' : '0%';
+
+                // 加载用户数据
+                const usersResponse = await fetch('/api/admin/users');
+                users = await usersResponse.json();
+                filteredUsers = [...users];
+                
+                renderTable();
+                renderCharts();
+                animatePageLoad();
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                alert('数据加载失败，请刷新页面重试');
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索和筛选
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('gradeFilter').addEventListener('change', filterData);
+            document.getElementById('scoreFilter').addEventListener('change', filterData);
+            
+            // 导出按钮
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            
+            // 分页按钮
+            document.getElementById('prevPage').addEventListener('click', () => changePage(-1));
+            document.getElementById('nextPage').addEventListener('click', () => changePage(1));
+            
+            // 模态框
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('detailModal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closeModal();
+            });
+        }
+
+        // 筛选数据
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const scoreFilter = document.getElementById('scoreFilter').value;
+            
+            filteredUsers = users.filter(user => {
+                // 搜索筛选
+                const matchesSearch = !searchTerm || 
+                    user.username.toLowerCase().includes(searchTerm) || 
+                    user.phone.includes(searchTerm);
+                
+                // 年级筛选
+                const matchesGrade = !gradeFilter || user.grade === gradeFilter;
+                
+                // 分数筛选
+                let matchesScore = true;
+                if (scoreFilter && user.totalScore) {
+                    const [min, max] = scoreFilter.split('-').map(Number);
+                    matchesScore = user.totalScore >= min && user.totalScore <= max;
+                }
+                
+                return matchesSearch && matchesGrade && matchesScore;
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+            
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            
+            pageUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-gray-100';
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-gray-800">${user.id}</td>
+                    <td class="py-3 px-4 text-gray-800 font-medium">${user.username}</td>
+                    <td class="py-3 px-4 text-gray-600">${user.grade}</td>
+                    <td class="py-3 px-4 text-gray-600">${user.phone}</td>
+                    <td class="py-3 px-4">
+                        ${user.totalScore ? 
+                            `<span class="inline-block px-2 py-1 rounded-full text-sm font-medium ${getScoreColor(user.totalScore)}">${user.totalScore}</span>` : 
+                            '<span class="text-gray-400">未测评</span>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-gray-600">${new Date(user.userTime).toLocaleDateString('zh-CN')}</td>
+                    <td class="py-3 px-4">
+                        <button onclick="showDetail(${user.id})" class="text-blue-600 hover:text-blue-800 mr-3">详情</button>
+                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 更新分页信息
+            updatePagination();
+        }
+
+        // 更新分页信息
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredUsers.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, filteredUsers.length);
+            
+            document.getElementById('totalCount').textContent = filteredUsers.length;
+            document.getElementById('totalRecords').textContent = filteredUsers.length;
+            document.getElementById('pageStart').textContent = startIndex + 1;
+            document.getElementById('pageEnd').textContent = endIndex;
+            document.getElementById('pageInfo').textContent = `第 ${currentPage} 页`;
+            
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        // 切换页面
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredUsers.length / pageSize);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderTable();
+            }
+        }
+
+        // 获取分数颜色
+        function getScoreColor(score) {
+            if (score >= 80) return 'bg-green-100 text-green-800';
+            if (score >= 60) return 'bg-blue-100 text-blue-800';
+            if (score >= 40) return 'bg-yellow-100 text-yellow-800';
+            return 'bg-red-100 text-red-800';
+        }
+
+        // 显示用户详情
+        function showDetail(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+                            <div class="text-gray-900">${user.username}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                            <div class="text-gray-900">${user.grade}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                            <div class="text-gray-900">${user.phone}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">注册时间</label>
+                            <div class="text-gray-900">${new Date(user.userTime).toLocaleString('zh-CN')}</div>
+                        </div>
+                    </div>
+                    
+                    ${user.totalScore ? `
+                        <div class="border-t pt-4">
+                            <h4 class="font-bold text-gray-800 mb-3">测评结果</h4>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">总分</label>
+                                    <div class="text-2xl font-bold text-blue-600">${user.totalScore} / 100</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">测评时间</label>
+                                    <div class="text-gray-900">${user.assessmentTime ? new Date(user.assessmentTime).toLocaleString('zh-CN') : '-'}</div>
+                                </div>
+                            </div>
+                            
+                            ${user.moduleScores ? `
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">各模块得分</label>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        ${Object.entries(user.moduleScores).map(([module, score]) => `
+                                            <div class="bg-gray-50 p-2 rounded text-center">
+                                                <div class="text-xs text-gray-600">${module}</div>
+                                                <div class="font-bold text-gray-800">${score.toFixed(1)}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : `
+                        <div class="border-t pt-4">
+                            <div class="text-center text-gray-500 py-8">
+                                <div class="text-4xl mb-2">📋</div>
+                                <div>该用户尚未完成测评</div>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // 删除用户
+        function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('删除失败：' + data.error);
+                } else {
+                    alert('删除成功！');
+                    loadData(); // 重新加载数据
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请重试');
+            });
+        }
+
+        // 导出数据
+        function exportData() {
+            if (filteredUsers.length === 0) {
+                alert('没有数据可导出');
+                return;
+            }
+            
+            const csvContent = generateCSV(filteredUsers);
+            downloadCSV(csvContent, 'user_data.csv');
+        }
+
+        // 生成CSV内容
+        function generateCSV(users) {
+            const headers = ['ID', '姓名', '年级', '手机号', '总分', '创造力', '技术能力', '任务理解', '社交应变', '问题分析', '注册时间', '测评时间'];
+            const rows = [headers.join(',')];
+            
+            users.forEach(user => {
+                const row = [
+                    user.id,
+                    user.username,
+                    user.grade,
+                    user.phone,
+                    user.totalScore || '',
+                    user.moduleScores?.创造力?.toFixed(1) || '',
+                    user.moduleScores?.技术能力?.toFixed(1) || '',
+                    user.moduleScores?.任务理解与执行?.toFixed(1) || '',
+                    user.moduleScores?.社交与应变?.toFixed(1) || '',
+                    user.moduleScores?.问题拆解与分析?.toFixed(1) || '',
+                    new Date(user.userTime).toLocaleDateString('zh-CN'),
+                    user.assessmentTime ? new Date(user.assessmentTime).toLocaleDateString('zh-CN') : ''
+                ];
+                rows.push(row.join(','));
+            });
+            
+            return rows.join('\n');
+        }
+
+        // 下载CSV文件
+        function downloadCSV(content, filename) {
+            const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 渲染图表
+        function renderCharts() {
+            renderScoreChart();
+            renderGradeChart();
+        }
+
+        // 渲染分数分布图
+        function renderScoreChart() {
+            const chartDom = document.getElementById('scoreChart');
+            const myChart = echarts.init(chartDom);
+            
+            // 统计分数分布
+            const scoreRanges = ['0-20', '21-40', '41-60', '61-80', '81-100'];
+            const scoreCounts = scoreRanges.map(range => {
+                const [min, max] = range.split('-').map(Number);
+                return users.filter(user => user.totalScore && user.totalScore >= min && user.totalScore <= max).length;
+            });
+            
+            const option = {
+                title: {
+                    text: '分数分布',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}人 ({d}%)'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '70%',
+                    data: scoreRanges.map((range, index) => ({
+                        value: scoreCounts[index],
+                        name: range + '分'
+                    })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            
+            myChart.setOption(option);
+        }
+
+        // 渲染年级分布图
+        function renderGradeChart() {
+            const chartDom = document.getElementById('gradeChart');
+            const myChart = echarts.init(chartDom);
+            
+            // 统计年级分布
+            const gradeCounts = {};
+            users.forEach(user => {
+                gradeCounts[user.grade] = (gradeCounts[user.grade] || 0) + 1;
+            });
+            
+            const option = {
+                title: {
+                    text: '年级分布',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: Object.keys(gradeCounts),
+                    axisLabel: {
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: Object.values(gradeCounts),
+                    type: 'bar',
+                    itemStyle: {
+                        color: '#3498db'
+                    }
+                }]
+            };
+            
+            myChart.setOption(option);
+        }
+
+        // 页面加载动画
+        function animatePageLoad() {
+            anime({
+                targets: '.stat-card, .glass-card',
+                translateY: [50, 0],
+                opacity: [0, 1],
+                duration: 800,
+                delay: anime.stagger(100),
+                easing: 'easeOutQuart'
+            });
+        }
+    </script>
+</body>
+</html>

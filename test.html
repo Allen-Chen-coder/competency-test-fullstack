@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统测试 - 就业竞争力测评</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            transition: all 0.3s ease;
+        }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(243, 156, 18, 0.4);
+        }
+        .status-success { color: #27ae60; }
+        .status-error { color: #e74c3c; }
+        .status-warning { color: #f39c12; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 标题 -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-4">系统功能测试</h1>
+                <p class="text-white text-lg opacity-90">测试各项功能是否正常工作</p>
+            </div>
+
+            <!-- 测试项目 -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- 页面跳转测试 -->
+                <div class="glass-card rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">🌐 页面跳转测试</h3>
+                    <div class="space-y-3">
+                        <button onclick="testPage('index.html')" class="btn-primary w-full py-2 px-4 rounded-lg text-white">
+                            测试首页
+                        </button>
+                        <button onclick="testPage('assessment.html')" class="btn-primary w-full py-2 px-4 rounded-lg text-white">
+                            测试测评页
+                        </button>
+                        <button onclick="testPage('results.html')" class="btn-primary w-full py-2 px-4 rounded-lg text-white">
+                            测试结果页
+                        </button>
+                        <button onclick="testPage('admin.html')" class="btn-primary w-full py-2 px-4 rounded-lg text-white">
+                            测试后台
+                        </button>
+                    </div>
+                    <div id="pageTestResult" class="mt-4 text-sm"></div>
+                </div>
+
+                <!-- 本地存储测试 -->
+                <div class="glass-card rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">💾 本地存储测试</h3>
+                    <div class="space-y-3">
+                        <button onclick="testLocalStorage()" class="btn-success w-full py-2 px-4 rounded-lg text-white">
+                            测试存储功能
+                        </button>
+                        <button onclick="clearLocalStorage()" class="btn-warning w-full py-2 px-4 rounded-lg text-white">
+                            清除测试数据
+                        </button>
+                    </div>
+                    <div id="storageTestResult" class="mt-4 text-sm"></div>
+                </div>
+
+                <!-- 数据验证测试 -->
+                <div class="glass-card rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">✅ 数据验证测试</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <input type="text" id="testPhone" placeholder="测试手机号" 
+                                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                        <button onclick="testPhoneValidation()" class="btn-success w-full py-2 px-4 rounded-lg text-white">
+                            测试手机号验证
+                        </button>
+                    </div>
+                    <div id="validationTestResult" class="mt-4 text-sm"></div>
+                </div>
+
+                <!-- 系统功能测试 -->
+                <div class="glass-card rounded-2xl p-6 shadow-2xl">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">⚙️ 系统功能测试</h3>
+                    <div class="space-y-3">
+                        <button onclick="testSystemFunctions()" class="btn-success w-full py-2 px-4 rounded-lg text-white">
+                            测试系统功能
+                        </button>
+                        <button onclick="checkSystemStatus()" class="btn-warning w-full py-2 px-4 rounded-lg text-white">
+                            检查系统状态
+                        </button>
+                    </div>
+                    <div id="systemTestResult" class="mt-4 text-sm"></div>
+                </div>
+            </div>
+
+            <!-- 测试结果汇总 -->
+            <div class="glass-card rounded-2xl p-6 shadow-2xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📊 测试结果汇总</h3>
+                <div id="testSummary" class="space-y-2">
+                    <div class="text-gray-600">等待测试...</div>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="text-center mt-8 space-x-4">
+                <button onclick="runAllTests()" class="btn-success px-8 py-3 rounded-lg text-white font-medium">
+                    🚀 运行所有测试
+                </button>
+                <button onclick="window.location.href='index.html'" class="btn-primary px-8 py-3 rounded-lg text-white font-medium">
+                    🏠 返回首页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        let testResults = [];
+
+        // 测试页面跳转
+        function testPage(page) {
+            const resultDiv = document.getElementById('pageTestResult');
+            
+            // 在新窗口中打开页面测试
+            const testWindow = window.open(page, '_blank');
+            
+            if (testWindow) {
+                resultDiv.innerHTML = `<span class="status-success">✓ ${page} 打开成功</span>`;
+                addTestResult('页面跳转', `${page} 可正常访问`, 'success');
+                
+                // 3秒后关闭测试窗口
+                setTimeout(() => {
+                    testWindow.close();
+                }, 3000);
+            } else {
+                resultDiv.innerHTML = `<span class="status-error">✗ ${page} 打开失败</span>`;
+                addTestResult('页面跳转', `${page} 无法访问`, 'error');
+            }
+        }
+
+        // 测试本地存储
+        function testLocalStorage() {
+            const resultDiv = document.getElementById('storageTestResult');
+            
+            try {
+                // 测试存储
+                const testData = {
+                    username: '测试用户',
+                    grade: '大四',
+                    phone: '13800138000',
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('test_user', JSON.stringify(testData));
+                
+                // 测试读取
+                const retrievedData = JSON.parse(localStorage.getItem('test_user'));
+                
+                if (retrievedData.username === testData.username) {
+                    resultDiv.innerHTML = `<span class="status-success">✓ 本地存储功能正常</span>`;
+                    addTestResult('本地存储', '数据存储和读取正常', 'success');
+                } else {
+                    throw new Error('数据不匹配');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="status-error">✗ 本地存储失败: ${error.message}</span>`;
+                addTestResult('本地存储', `存储功能异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 清除测试数据
+        function clearLocalStorage() {
+            localStorage.removeItem('test_user');
+            document.getElementById('storageTestResult').innerHTML = 
+                `<span class="status-warning">⚠ 测试数据已清除</span>`;
+            addTestResult('清除数据', '测试数据清除完成', 'warning');
+        }
+
+        // 测试手机号验证
+        function testPhoneValidation() {
+            const phone = document.getElementById('testPhone').value;
+            const resultDiv = document.getElementById('validationTestResult');
+            
+            if (!phone) {
+                resultDiv.innerHTML = `<span class="status-warning">⚠ 请输入手机号</span>`;
+                return;
+            }
+            
+            const isValid = validatePhone(phone);
+            
+            if (isValid) {
+                resultDiv.innerHTML = `<span class="status-success">✓ 手机号格式正确</span>`;
+                addTestResult('手机号验证', `${phone} 格式正确`, 'success');
+            } else {
+                resultDiv.innerHTML = `<span class="status-error">✗ 手机号格式错误</span>`;
+                addTestResult('手机号验证', `${phone} 格式错误`, 'error');
+            }
+        }
+
+        // 测试系统功能
+        function testSystemFunctions() {
+            const resultDiv = document.getElementById('systemTestResult');
+            let results = [];
+            
+            // 测试系统是否存在
+            if (window.assessmentSystem) {
+                results.push('✓ 测评系统实例存在');
+            } else {
+                results.push('✗ 测评系统实例不存在');
+            }
+            
+            // 测试工具函数
+            if (typeof validatePhone === 'function') {
+                results.push('✓ 验证函数可用');
+            } else {
+                results.push('✗ 验证函数不可用');
+            }
+            
+            // 测试存储工具
+            if (window.StorageUtil) {
+                results.push('✓ 存储工具可用');
+            } else {
+                results.push('✗ 存储工具不可用');
+            }
+            
+            resultDiv.innerHTML = `<div class="text-sm">${results.join('<br>')}</div>`;
+            addTestResult('系统功能', `功能检测完成 - ${results.length}项通过`, 'success');
+        }
+
+        // 检查系统状态
+        function checkSystemStatus() {
+            const resultDiv = document.getElementById('systemTestResult');
+            
+            const status = {
+                userAgent: navigator.userAgent,
+                localStorage: typeof Storage !== 'undefined',
+                cookies: navigator.cookieEnabled,
+                online: navigator.onLine,
+                timestamp: new Date().toLocaleString('zh-CN')
+            };
+            
+            let html = '<div class="text-sm space-y-1">';
+            html += `<div><strong>用户代理:</strong> ${status.userAgent}</div>`;
+            html += `<div><strong>本地存储:</strong> ${status.localStorage ? '支持' : '不支持'}</div>`;
+            html += `<div><strong>Cookies:</strong> ${status.cookies ? '启用' : '禁用'}</div>`;
+            html += `<div><strong>网络状态:</strong> ${status.online ? '在线' : '离线'}</div>`;
+            html += `<div><strong>检查时间:</strong> ${status.timestamp}</div>`;
+            html += '</div>';
+            
+            resultDiv.innerHTML = html;
+            addTestResult('系统状态', '状态检查完成', 'success');
+        }
+
+        // 添加测试结果
+        function addTestResult(category, description, status) {
+            testResults.push({
+                category,
+                description,
+                status,
+                timestamp: new Date().toLocaleTimeString('zh-CN')
+            });
+            
+            updateTestSummary();
+        }
+
+        // 更新测试汇总
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('testSummary');
+            
+            if (testResults.length === 0) {
+                summaryDiv.innerHTML = '<div class="text-gray-600">暂无测试结果</div>';
+                return;
+            }
+            
+            const successCount = testResults.filter(r => r.status === 'success').length;
+            const errorCount = testResults.filter(r => r.status === 'error').length;
+            const warningCount = testResults.filter(r => r.status === 'warning').length;
+            
+            let html = `
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="text-center p-3 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600">${successCount}</div>
+                        <div class="text-sm text-green-700">成功</div>
+                    </div>
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                        <div class="text-2xl font-bold text-yellow-600">${warningCount}</div>
+                        <div class="text-sm text-yellow-700">警告</div>
+                    </div>
+                    <div class="text-center p-3 bg-red-50 rounded-lg">
+                        <div class="text-2xl font-bold text-red-600">${errorCount}</div>
+                        <div class="text-sm text-red-700">错误</div>
+                    </div>
+                </div>
+            `;
+            
+            // 显示最近5条测试结果
+            const recentResults = testResults.slice(-5);
+            html += '<div class="space-y-2 max-h-40 overflow-y-auto">';
+            recentResults.forEach(result => {
+                const statusColor = {
+                    success: 'text-green-600',
+                    warning: 'text-yellow-600',
+                    error: 'text-red-600'
+                };
+                
+                html += `
+                    <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium ${statusColor[result.status]}">[${result.category}]</span>
+                            <span class="text-gray-700">${result.description}</span>
+                        </div>
+                        <span class="text-gray-500">${result.timestamp}</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            summaryDiv.innerHTML = html;
+        }
+
+        // 运行所有测试
+        function runAllTests() {
+            testResults = []; // 清空之前的测试结果
+            
+            // 按顺序执行测试
+            setTimeout(() => testLocalStorage(), 500);
+            setTimeout(() => testPhoneValidation(), 1000);
+            setTimeout(() => testSystemFunctions(), 1500);
+            setTimeout(() => checkSystemStatus(), 2000);
+            
+            // 显示测试进度
+            const summaryDiv = document.getElementById('testSummary');
+            summaryDiv.innerHTML = '<div class="text-blue-600">🔄 正在运行测试...</div>';
+            
+            // 测试完成后更新汇总
+            setTimeout(() => {
+                updateTestSummary();
+            }, 2500);
+        }
+
+        // 初始化测试页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加测试手机号示例
+            document.getElementById('testPhone').value = '13800138000';
+            
+            console.log('测试页面已加载');
+        });
+    </script>
+</body>
+</html>

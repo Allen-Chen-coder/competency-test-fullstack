@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就业竞争力测评 - 问卷页面</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #3498db, #27ae60);
+            transition: width 0.3s ease;
+        }
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .option-card.selected {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(149, 165, 166, 0.4);
+        }
+        .module-indicator {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid #3498db;
+        }
+        .module-indicator.active {
+            background: #3498db;
+            color: white;
+        }
+        .question-number {
+            color: #3498db;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 头部信息 -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">就业竞争力指数测评</h1>
+                <p class="text-white opacity-90">第 <span id="currentQuestion" class="question-number">1</span> 题 / 共 <span id="totalQuestions">72</span> 题</p>
+            </div>
+
+            <!-- 进度条 -->
+            <div class="mb-8">
+                <div class="bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progressBar" class="progress-bar h-full rounded-full" style="width: 1.4%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-white text-sm">
+                    <span>开始</span>
+                    <span id="progressText">1.4%</span>
+                    <span>完成</span>
+                </div>
+            </div>
+
+            <!-- 模块指示器 -->
+            <div class="flex justify-center mb-8 space-x-2">
+                <div class="module-indicator active px-3 py-1 rounded-full text-sm font-medium">创造力</div>
+                <div class="module-indicator px-3 py-1 rounded-full text-sm font-medium">技术能力</div>
+                <div class="module-indicator px-3 py-1 rounded-full text-sm font-medium">任务理解</div>
+                <div class="module-indicator px-3 py-1 rounded-full text-sm font-medium">社交应变</div>
+                <div class="module-indicator px-3 py-1 rounded-full text-sm font-medium">问题分析</div>
+            </div>
+
+            <!-- 问题卡片 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl mb-8">
+                <div class="mb-6">
+                    <h2 id="questionText" class="text-xl font-bold text-gray-800 mb-4">
+                        当你遇到一个常规方法无法解决的问题时，你通常会：
+                    </h2>
+                    <div id="questionModule" class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        创造力模块
+                    </div>
+                </div>
+
+                <!-- 选项列表 -->
+                <div id="optionsContainer" class="space-y-4">
+                    <!-- 选项将通过JavaScript动态生成 -->
+                </div>
+
+                <!-- 提示信息 -->
+                <div id="hintText" class="mt-6 p-4 bg-blue-50 rounded-lg hidden">
+                    <p class="text-blue-800 text-sm">
+                        <strong>提示：</strong>请仔细阅读每个选项，选择最符合您实际情况的答案。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 导航按钮 -->
+            <div class="flex justify-between items-center">
+                <button id="prevBtn" class="btn-secondary px-6 py-3 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    ← 上一题
+                </button>
+                
+                <div class="flex space-x-4">
+                    <button id="nextBtn" class="btn-primary px-6 py-3 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        下一题 →
+                    </button>
+                    <button id="submitBtn" class="btn-primary px-8 py-3 rounded-lg text-white font-medium hidden">
+                        提交测评
+                    </button>
+                </div>
+            </div>
+
+            <!-- 用户信息 -->
+            <div class="mt-8 text-center">
+                <p class="text-white opacity-75 text-sm">
+                    用户：<span id="userName">-</span> | 年级：<span id="userGrade">-</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let answers = {};
+        let userInfo = {};
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检查用户是否已认证
+            userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            if (!userInfo.username) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 显示用户信息
+            document.getElementById('userName').textContent = userInfo.username;
+            document.getElementById('userGrade').textContent = userInfo.grade;
+
+            // 加载题目数据
+            try {
+                const response = await fetch('questions.json');
+                questions = await response.json();
+                
+                // 扩展题目到72道（重复使用现有题目模板）
+                questions = expandQuestions(questions);
+                
+                document.getElementById('totalQuestions').textContent = questions.length;
+                loadQuestion();
+            } catch (error) {
+                console.error('加载题目失败:', error);
+                alert('题目加载失败，请刷新页面重试');
+            }
+        });
+
+        // 扩展题目数量到72道
+        function expandQuestions(baseQuestions) {
+            const expandedQuestions = [];
+            let questionId = 1;
+            
+            // 为每个模块创建足够的题目
+            const modules = ['创造力', '技术能力', '任务理解与执行', '社交与应变', '问题拆解与分析'];
+            const questionsPerModule = 14; // 5个模块共70题，加上2道综合题
+            
+            modules.forEach((module, moduleIndex) => {
+                const moduleQuestions = baseQuestions.filter(q => q.module === module);
+                
+                for (let i = 0; i < questionsPerModule; i++) {
+                    const baseQuestion = moduleQuestions[i % moduleQuestions.length];
+                    const newQuestion = JSON.parse(JSON.stringify(baseQuestion));
+                    newQuestion.id = questionId++;
+                    newQuestion.question = `${module}问题 ${i + 1}: ${baseQuestion.question}`;
+                    newQuestion.weight = 0.5 + Math.random() * 0.5; // 随机权重0.5-1.0
+                    expandedQuestions.push(newQuestion);
+                }
+            });
+            
+            // 添加2道综合题
+            expandedQuestions.push({
+                id: questionId++,
+                module: "综合能力",
+                question: "在面对需要综合运用多种能力的复杂项目时，你更倾向于：",
+                options: [
+                    { "text": "A. 统筹规划，协调各方资源推进", "scores": { "创造力": 0.8, "任务理解与执行": 0.9, "社交与应变": 0.7 } },
+                    { "text": "B. 专注自己擅长的部分，寻求合作", "scores": { "技术能力": 0.8, "问题拆解与分析": 0.6 } },
+                    { "text": "C. 按照项目流程逐步执行", "scores": { "任务理解与执行": 0.7, "技术能力": 0.5 } },
+                    { "text": "D. 希望有明确的指导和分工", "scores": { "任务理解与执行": 0.4 } }
+                ],
+                weight: 1.0
+            });
+            
+            expandedQuestions.push({
+                id: questionId++,
+                module: "综合能力",
+                question: "当项目遇到多方意见不一致时，你的处理方式是：",
+                options: [
+                    { "text": "A. 分析各方立场，寻找最佳解决方案", "scores": { "问题拆解与分析": 0.9, "社交与应变": 0.8, "创造力": 0.7 } },
+                    { "text": "B. 协调沟通，促进达成共识", "scores": { "社交与应变": 0.9, "任务理解与执行": 0.6 } },
+                    { "text": "C. 支持最合理的方案并推进", "scores": { "问题拆解与分析": 0.7, "任务理解与执行": 0.7 } },
+                    { "text": "D. 等待上级做出最终决定", "scores": { "任务理解与执行": 0.3 } }
+                ],
+                weight: 1.0
+            });
+            
+            return expandedQuestions;
+        }
+
+        // 加载当前题目
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            
+            // 更新题目信息
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('questionModule').textContent = question.module + '模块';
+            
+            // 更新进度条
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress.toFixed(1) + '%';
+            
+            // 更新模块指示器
+            updateModuleIndicator(question.module);
+            
+            // 生成选项
+            generateOptions(question);
+            
+            // 更新按钮状态
+            updateButtonStates();
+            
+            // 恢复已选择的答案
+            if (answers[currentQuestionIndex] !== undefined) {
+                selectOption(answers[currentQuestionIndex]);
+            }
+        }
+
+        // 更新模块指示器
+        function updateModuleIndicator(currentModule) {
+            const indicators = document.querySelectorAll('.module-indicator');
+            indicators.forEach(indicator => {
+                indicator.classList.remove('active');
+                if (indicator.textContent.includes(currentModule) || 
+                    (currentModule === '综合能力' && indicator.textContent.includes('社交'))) {
+                    indicator.classList.add('active');
+                }
+            });
+        }
+
+        // 生成选项
+        function generateOptions(question) {
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300';
+                optionCard.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-300 mr-3 mt-1 option-indicator"></div>
+                        <div class="flex-1">
+                            <p class="text-gray-800 font-medium">${option.text}</p>
+                            <div class="text-sm text-gray-500 mt-1">
+                                ${Object.entries(option.scores).map(([module, score]) => 
+                                    `<span class="inline-block bg-gray-100 rounded px-2 py-1 mr-2">${module}: +${score.toFixed(1)}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                optionCard.addEventListener('click', () => selectOption(index));
+                container.appendChild(optionCard);
+            });
+        }
+
+        // 选择选项
+        function selectOption(optionIndex) {
+            // 清除之前的选择
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 选中当前选项
+            const selectedCard = document.querySelectorAll('.option-card')[optionIndex];
+            selectedCard.classList.add('selected');
+            
+            // 保存答案
+            answers[currentQuestionIndex] = optionIndex;
+            
+            // 启用下一题按钮
+            document.getElementById('nextBtn').disabled = false;
+            
+            // 显示提示
+            document.getElementById('hintText').classList.remove('hidden');
+        }
+
+        // 更新按钮状态
+        function updateButtonStates() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // 上一题按钮
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
+            // 下一题/提交按钮
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+                submitBtn.disabled = answers[currentQuestionIndex] === undefined;
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+                nextBtn.disabled = answers[currentQuestionIndex] === undefined;
+            }
+        }
+
+        // 上一题
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        });
+
+        // 下一题
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        });
+
+        // 提交测评
+        document.getElementById('submitBtn').addEventListener('click', async function() {
+            if (Object.keys(answers).length !== questions.length) {
+                alert('请完成所有题目后再提交！');
+                return;
+            }
+            
+            try {
+                // 计算分数
+                const results = calculateScores();
+                
+                // 保存结果到本地存储
+                localStorage.setItem('assessmentResults', JSON.stringify(results));
+                
+                // 提交到服务器
+                const response = await fetch('/api/assessments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userInfo,
+                        answers,
+                        results,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    // 跳转到结果页面
+                    window.location.href = 'results.html';
+                } else {
+                    alert('提交失败，请重试');
+                }
+            } catch (error) {
+                console.error('提交失败:', error);
+                alert('网络错误，请检查网络连接');
+            }
+        });
+
+        // 计算分数
+        function calculateScores() {
+            const moduleScores = {
+                '创造力': { score: 0, maxScore: 0 },
+                '技术能力': { score: 0, maxScore: 0 },
+                '任务理解与执行': { score: 0, maxScore: 0 },
+                '社交与应变': { score: 0, maxScore: 0 },
+                '问题拆解与分析': { score: 0, maxScore: 0 }
+            };
+            
+            // 计算各模块得分
+            questions.forEach((question, index) => {
+                const selectedOption = question.options[answers[index]];
+                const weight = question.weight;
+                
+                Object.entries(selectedOption.scores).forEach(([module, score]) => {
+                    if (moduleScores[module]) {
+                        moduleScores[module].score += score * weight;
+                        moduleScores[module].maxScore += weight;
+                    }
+                });
+            });
+            
+            // 计算标准化分数（5分制）
+            const normalizedScores = {};
+            Object.entries(moduleScores).forEach(([module, data]) => {
+                normalizedScores[module] = (data.score / data.maxScore) * 5;
+            });
+            
+            // 计算总分（100分制）
+            const weights = {
+                '创造力': 0.20,
+                '技术能力': 0.25,
+                '任务理解与执行': 0.20,
+                '社交与应变': 0.15,
+                '问题拆解与分析': 0.20
+            };
+            
+            let totalScore = 0;
+            Object.entries(normalizedScores).forEach(([module, score]) => {
+                totalScore += (score / 5) * 100 * weights[module];
+            });
+            
+            return {
+                moduleScores: normalizedScores,
+                totalScore: Math.round(totalScore),
+                answers: answers
+            };
+        }
+
+        // 页面加载动画
+        anime({
+            targets: '.glass-card',
+            translateY: [50, 0],
+            opacity: [0, 1],
+            duration: 800,
+            easing: 'easeOutQuart'
+        });
+    </script>
+</body>
+</html>

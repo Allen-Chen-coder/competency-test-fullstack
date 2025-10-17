@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测评结果 - 就业竞争力指数</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(45deg, #3498db, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .score-circle {
+            background: conic-gradient(from 0deg, #3498db 0deg, #27ae60 var(--score-angle), #e0e0e0 var(--score-angle), #e0e0e0 360deg);
+        }
+        .module-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .module-card.creativity { border-left-color: #e74c3c; }
+        .module-card.technical { border-left-color: #3498db; }
+        .module-card.execution { border-left-color: #f39c12; }
+        .module-card.social { border-left-color: #9b59b6; }
+        .module-card.analysis { border-left-color: #27ae60; }
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        .level-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .level-beginner { background: #fee2e2; color: #dc2626; }
+        .level-intermediate { background: #fef3c7; color: #d97706; }
+        .level-advanced { background: #dcfce7; color: #16a34a; }
+        .level-expert { background: #dbeafe; color: #2563eb; }
+        .level-master { background: #f3e8ff; color: #9333ea; }
+    </style>
+</head>
+<body class="py-8">
+    <div class="container mx-auto px-4">
+        <!-- 头部标题 -->
+        <div class="text-center mb-8">
+            <h1 class="hero-title text-4xl font-bold mb-4">就业竞争力测评报告</h1>
+            <p class="text-white text-lg opacity-90">基于科学评估的个性化发展建议</p>
+        </div>
+
+        <!-- 用户信息卡片 -->
+        <div class="glass-card rounded-2xl p-6 shadow-2xl mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        <span id="userName">-</span> 的竞争力分析报告
+                    </h2>
+                    <p class="text-gray-600">
+                        年级：<span id="userGrade">-</span> | 测评时间：<span id="assessmentTime">-</span>
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-blue-600">
+                        <span id="totalScore">-</span> / 100
+                    </div>
+                    <div class="text-sm text-gray-500">综合得分</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 雷达图和模块分析 -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <!-- 五维雷达图 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">能力雷达图</h3>
+                <div id="radarChart" style="height: 400px;"></div>
+            </div>
+
+            <!-- 模块得分详情 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">模块得分详情</h3>
+                <div id="moduleScores" class="space-y-4">
+                    <!-- 模块得分将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 个性化建议 -->
+        <div class="glass-card rounded-2xl p-8 shadow-2xl mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">🎯 个性化发展建议</h3>
+            
+            <!-- 总分档次分析 -->
+            <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl">
+                <h4 class="text-lg font-bold text-gray-800 mb-4">📊 综合评估</h4>
+                <div id="totalScoreAnalysis">
+                    <!-- 总分分析将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 各模块建议 -->
+            <div id="moduleSuggestions" class="space-y-6">
+                <!-- 模块建议将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 行动计划 -->
+        <div class="glass-card rounded-2xl p-8 shadow-2xl mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">🚀 90天行动计划</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-red-50 rounded-xl">
+                    <div class="text-2xl mb-2">第1-30天</div>
+                    <h4 class="font-bold text-gray-800 mb-2">基础强化期</h4>
+                    <p class="text-sm text-gray-600">重点提升最薄弱环节，建立学习习惯</p>
+                </div>
+                <div class="text-center p-6 bg-yellow-50 rounded-xl">
+                    <div class="text-2xl mb-2">第31-60天</div>
+                    <h4 class="font-bold text-gray-800 mb-2">实践应用期</h4>
+                    <p class="text-sm text-gray-600">在实际工作中应用新技能，积累经验</p>
+                </div>
+                <div class="text-center p-6 bg-green-50 rounded-xl">
+                    <div class="text-2xl mb-2">第61-90天</div>
+                    <h4 class="font-bold text-gray-800 mb-2">提升展示期</h4>
+                    <p class="text-sm text-gray-600">展示学习成果，寻求更多发展机会</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="text-center space-x-4">
+            <button id="downloadBtn" class="btn-primary px-8 py-3 rounded-lg text-white font-medium">
+                📄 下载报告
+            </button>
+            <button id="shareBtn" class="btn-primary px-8 py-3 rounded-lg text-white font-medium">
+                📤 分享结果
+            </button>
+            <button id="restartBtn" class="btn-primary px-8 py-3 rounded-lg text-white font-medium">
+                🔄 重新测评
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let results = {};
+        let suggestions = {};
+        let userInfo = {};
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 获取用户信息和测评结果
+            userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            results = JSON.parse(localStorage.getItem('assessmentResults') || '{}');
+            
+            if (!userInfo.username || !results.moduleScores) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 加载建议数据
+            try {
+                const response = await fetch('suggestions.json');
+                suggestions = await response.json();
+            } catch (error) {
+                console.error('加载建议数据失败:', error);
+            }
+
+            // 显示用户信息
+            displayUserInfo();
+            
+            // 显示雷达图
+            displayRadarChart();
+            
+            // 显示模块得分
+            displayModuleScores();
+            
+            // 显示建议
+            displaySuggestions();
+            
+            // 页面加载动画
+            animatePageLoad();
+        });
+
+        // 显示用户信息
+        function displayUserInfo() {
+            document.getElementById('userName').textContent = userInfo.username;
+            document.getElementById('userGrade').textContent = userInfo.grade;
+            document.getElementById('assessmentTime').textContent = new Date().toLocaleDateString('zh-CN');
+            document.getElementById('totalScore').textContent = results.totalScore;
+        }
+
+        // 显示雷达图
+        function displayRadarChart() {
+            const chartDom = document.getElementById('radarChart');
+            const myChart = echarts.init(chartDom);
+            
+            const modules = Object.keys(results.moduleScores);
+            const scores = modules.map(module => results.moduleScores[module]);
+            const maxScores = new Array(modules.length).fill(5);
+            
+            const option = {
+                title: {
+                    text: '能力分布雷达图',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                radar: {
+                    indicator: modules.map(module => ({
+                        name: module,
+                        max: 5
+                    })),
+                    radius: '70%',
+                    axisName: {
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    },
+                    splitArea: {
+                        areaStyle: {
+                            color: ['rgba(52, 152, 219, 0.1)', 'rgba(39, 174, 96, 0.1)']
+                        }
+                    }
+                },
+                series: [{
+                    name: '能力值',
+                    type: 'radar',
+                    data: [
+                        {
+                            value: scores,
+                            name: '您的能力',
+                            areaStyle: {
+                                color: 'rgba(52, 152, 219, 0.3)'
+                            },
+                            lineStyle: {
+                                color: '#3498db',
+                                width: 3
+                            },
+                            itemStyle: {
+                                color: '#3498db'
+                            }
+                        },
+                        {
+                            value: maxScores,
+                            name: '满分标准',
+                            lineStyle: {
+                                color: '#27ae60',
+                                width: 2,
+                                type: 'dashed'
+                            },
+                            itemStyle: {
+                                color: '#27ae60'
+                            },
+                        }
+                    ]
+                }],
+                legend: {
+                    bottom: 10,
+                    data: ['您的能力', '满分标准']
+                }
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应式调整
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 显示模块得分
+        function displayModuleScores() {
+            const container = document.getElementById('moduleScores');
+            container.innerHTML = '';
+            
+            const moduleClasses = {
+                '创造力': 'creativity',
+                '技术能力': 'technical',
+                '任务理解与执行': 'execution',
+                '社交与应变': 'social',
+                '问题拆解与分析': 'analysis'
+            };
+            
+            Object.entries(results.moduleScores).forEach(([module, score]) => {
+                const percentage = (score / 5) * 100;
+                const level = getScoreLevel(score, 5);
+                
+                const moduleCard = document.createElement('div');
+                moduleCard.className = `module-card ${moduleClasses[module]} bg-white p-4 rounded-lg shadow-sm`;
+                moduleCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-gray-800">${module}</h4>
+                        <span class="level-badge ${getLevelBadgeClass(level)}">${level}</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-1">
+                            <div class="bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-1000" 
+                                     style="width: ${percentage}%; background: linear-gradient(90deg, #3498db, #27ae60);"></div>
+                            </div>
+                        </div>
+                        <div class="text-lg font-bold text-gray-800 min-w-[60px]">
+                            ${score.toFixed(1)} / 5.0
+                        </div>
+                    </div>
+                `;
+                container.appendChild(moduleCard);
+            });
+        }
+
+        // 获取分数等级
+        function getScoreLevel(score, maxScore = 5) {
+            const percentage = (score / maxScore) * 100;
+            if (percentage >= 80) return '专家';
+            if (percentage >= 60) return '高级';
+            if (percentage >= 40) return '中级';
+            if (percentage >= 20) return '入门';
+            return '初级';
+        }
+
+        // 获取等级徽章样式
+        function getLevelBadgeClass(level) {
+            const classes = {
+                '初级': 'level-beginner',
+                '入门': 'level-beginner',
+                '中级': 'level-intermediate',
+                '高级': 'level-advanced',
+                '专家': 'level-expert'
+            };
+            return classes[level] || 'level-beginner';
+        }
+
+        // 显示建议
+        function displaySuggestions() {
+            // 总分档次分析
+            const totalScoreAnalysis = document.getElementById('totalScoreAnalysis');
+            const totalScoreRange = getScoreRange(results.totalScore, 100);
+            const totalSuggestion = suggestions.totalScore?.[totalScoreRange];
+            
+            if (totalSuggestion) {
+                totalScoreAnalysis.innerHTML = `
+                    <div class="mb-4">
+                        <span class="level-badge ${getLevelBadgeClass(getScoreLevel(results.totalScore, 100))}">
+                            ${getScoreRangeText(results.totalScore, 100)}
+                        </span>
+                    </div>
+                    <p class="text-gray-700 mb-3">${totalSuggestion.summary}</p>
+                    <p class="text-blue-700 font-medium">${totalSuggestion.recommendation}</p>
+                `;
+            }
+            
+            // 各模块建议
+            const moduleSuggestions = document.getElementById('moduleSuggestions');
+            moduleSuggestions.innerHTML = '';
+            
+            Object.entries(results.moduleScores).forEach(([module, score]) => {
+                const scoreRange = getScoreRange(score, 5);
+                const moduleSuggestion = suggestions.modules?.[module]?.[scoreRange];
+                
+                if (moduleSuggestion) {
+                    const suggestionCard = document.createElement('div');
+                    suggestionCard.className = 'module-card bg-white p-6 rounded-xl shadow-sm';
+                    suggestionCard.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <h4 class="text-lg font-bold text-gray-800 mr-3">${module}</h4>
+                            <span class="level-badge ${getLevelBadgeClass(moduleSuggestion.level)}">${moduleSuggestion.level}</span>
+                        </div>
+                        <p class="text-gray-700 mb-2">${moduleSuggestion.description}</p>
+                        <p class="text-blue-700 font-medium">${moduleSuggestion.suggestion}</p>
+                    `;
+                    moduleSuggestions.appendChild(suggestionCard);
+                }
+            });
+        }
+
+        // 获取分数范围
+        function getScoreRange(score, maxScore = 5) {
+            const ranges = maxScore === 100 ? 
+                ['0-20', '21-40', '41-60', '61-80', '81-100'] :
+                ['0-1', '1-2', '2-3', '3-4', '4-5'];
+            
+            const percentage = (score / maxScore) * 100;
+            const rangeIndex = Math.min(Math.floor(percentage / 20), 4);
+            return ranges[rangeIndex];
+        }
+
+        // 获取分数范围文本
+        function getScoreRangeText(score, maxScore = 5) {
+            if (maxScore === 100) {
+                if (score <= 20) return '0-20分';
+                if (score <= 40) return '21-40分';
+                if (score <= 60) return '41-60分';
+                if (score <= 80) return '61-80分';
+                return '81-100分';
+            } else {
+                if (score <= 1) return '0-1分';
+                if (score <= 2) return '1-2分';
+                if (score <= 3) return '2-3分';
+                if (score <= 4) return '3-4分';
+                return '4-5分';
+            }
+        }
+
+        // 页面加载动画
+        function animatePageLoad() {
+            anime({
+                targets: '.glass-card',
+                translateY: [50, 0],
+                opacity: [0, 1],
+                duration: 800,
+                delay: anime.stagger(200),
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // 按钮事件处理
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            // 生成PDF报告（这里只是模拟）
+            alert('报告下载功能开发中，敬请期待！');
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '我的就业竞争力测评报告',
+                    text: `我在就业竞争力测评中获得了${results.totalScore}分！`,
+                    url: window.location.href
+                });
+            } else {
+                // 复制到剪贴板
+                const text = `我在就业竞争力测评中获得了${results.totalScore}分！快来测试你的就业竞争力吧！`;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('分享内容已复制到剪贴板！');
+                });
+            }
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', function() {
+            if (confirm('确定要重新开始测评吗？当前结果将会丢失。')) {
+                localStorage.removeItem('assessmentResults');
+                window.location.href = 'assessment.html';
+            }
+        });
+    </script>
+</body>
+</html>

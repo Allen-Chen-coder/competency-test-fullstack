@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就业竞争力指数测评系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(45deg, #3498db, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        #particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .success-message {
+            color: #27ae60;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+    <div id="particles-container"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <div class="max-w-md mx-auto">
+            <!-- 标题部分 -->
+            <div class="text-center mb-8">
+                <h1 class="hero-title text-4xl font-bold mb-4">就业竞争力指数测评</h1>
+                <p class="text-white text-lg opacity-90">发现你的职业潜能，规划美好未来</p>
+            </div>
+
+            <!-- 认证表单 -->
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                <form id="authForm" class="space-y-6">
+                    <div class="form-group">
+                        <label class="block text-white text-sm font-medium mb-2">姓名</label>
+                        <input type="text" id="username" name="username" 
+                               class="input-field w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none"
+                               placeholder="请输入您的姓名" required>
+                        <div id="usernameError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-white text-sm font-medium mb-2">年级</label>
+                        <select id="grade" name="grade" 
+                                class="input-field w-full px-4 py-3 rounded-lg text-gray-800 focus:outline-none" required>
+                            <option value="">请选择您的年级</option>
+                            <option value="大一">大一</option>
+                            <option value="大二">大二</option>
+                            <option value="大三">大三</option>
+                            <option value="大四">大四</option>
+                            <option value="研一">研一</option>
+                            <option value="研二">研二</option>
+                            <option value="研三">研三</option>
+                            <option value="博一">博一</option>
+                            <option value="博二">博二</option>
+                            <option value="博三">博三</option>
+                            <option value="博四">博四</option>
+                        </select>
+                        <div id="gradeError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-white text-sm font-medium mb-2">手机号</label>
+                        <input type="tel" id="phone" name="phone" 
+                               class="input-field w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none"
+                               placeholder="请输入11位手机号" maxlength="11" required>
+                        <div id="phoneError" class="error-message hidden"></div>
+                        <div id="phoneSuccess" class="success-message hidden"></div>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                            class="btn-primary w-full py-3 px-6 rounded-lg text-white font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        开始测评
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-white text-sm opacity-75">
+                        完成测评后，您将获得详细的竞争力分析报告
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 粒子背景效果
+        let particles = [];
+        
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('particles-container');
+            
+            // 创建粒子
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: random(width),
+                    y: random(height),
+                    vx: random(-1, 1),
+                    vy: random(-1, 1),
+                    size: random(2, 4)
+                });
+            }
+        }
+        
+        function draw() {
+            clear();
+            
+            // 绘制粒子
+            for (let particle of particles) {
+                fill(255, 255, 255, 100);
+                noStroke();
+                ellipse(particle.x, particle.y, particle.size);
+                
+                // 更新位置
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // 边界检测
+                if (particle.x < 0 || particle.x > width) particle.vx *= -1;
+                if (particle.y < 0 || particle.y > height) particle.vy *= -1;
+            }
+        }
+        
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        // 表单验证
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const grade = document.getElementById('grade').value;
+            const phone = document.getElementById('phone').value.trim();
+            
+            // 验证手机号
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            if (!phoneRegex.test(phone)) {
+                showError('phone', '请输入有效的11位手机号');
+                return;
+            }
+            
+            // 验证年级
+            const validGrades = ['大一', '大二', '大三', '大四', '研一', '研二', '研三', '博一', '博二', '博三', '博四'];
+            if (!validGrades.includes(grade)) {
+                showError('grade', '请选择有效的年级');
+                return;
+            }
+            
+            // 验证姓名
+            if (username.length < 1) {
+                showError('username', '请输入您的姓名');
+                return;
+            }
+            
+            try {
+                // 提交用户信息
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username,
+                        grade,
+                        phone,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    // 保存用户信息到本地存储
+                    localStorage.setItem('userInfo', JSON.stringify({
+                        username,
+                        grade,
+                        phone
+                    }));
+                    
+                    // 跳转到测评页面
+                    window.location.href = 'assessment.html';
+                } else {
+                    alert('提交失败，请重试');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('网络错误，请检查网络连接');
+            }
+        });
+        
+        // 实时手机号验证
+        document.getElementById('phone').addEventListener('input', function(e) {
+            const phone = e.target.value;
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            
+            if (phone.length === 11) {
+                if (phoneRegex.test(phone)) {
+                    showSuccess('phone', '手机号格式正确');
+                } else {
+                    showError('phone', '手机号格式不正确');
+                }
+            } else {
+                clearMessage('phone');
+            }
+        });
+        
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const successElement = document.getElementById(fieldId + 'Success');
+            
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            successElement.classList.add('hidden');
+        }
+        
+        function showSuccess(fieldId, message) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const successElement = document.getElementById(fieldId + 'Success');
+            
+            successElement.textContent = message;
+            successElement.classList.remove('hidden');
+            errorElement.classList.add('hidden');
+        }
+        
+        function clearMessage(fieldId) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const successElement = document.getElementById(fieldId + 'Success');
+            
+            errorElement.classList.add('hidden');
+            successElement.classList.add('hidden');
+        }
+        
+        // 页面加载动画
+        anime({
+            targets: '.glass-card',
+            translateY: [50, 0],
+            opacity: [0, 1],
+            duration: 1000,
+            easing: 'easeOutQuart'
+        });
+        
+        anime({
+            targets: '.hero-title',
+            translateY: [30, 0],
+            opacity: [0, 1],
+            duration: 800,
+            delay: 200,
+            easing: 'easeOutQuart'
+        });
+    </script>
+</body>
+</html>
